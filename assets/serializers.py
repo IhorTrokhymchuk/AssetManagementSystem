@@ -1,11 +1,20 @@
-from django.contrib.auth.models import User
-from drf_yasg.utils import swagger_auto_schema
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from .models import Asset, MaintenanceRecord
+from django.contrib.auth import authenticate
+
+CustomUser = get_user_model()
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'role']
+
+    id = serializers.IntegerField(help_text='ID користувача')
+    username = serializers.CharField(help_text='Ім\'я користувача')
+    email = serializers.EmailField(help_text='Email користувача')
+    role = serializers.ChoiceField(choices=CustomUser.USER_ROLES, help_text='Роль користувача')
 
 
 class MaintenanceRecordSerializer(serializers.ModelSerializer):
@@ -38,7 +47,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['username', 'email', 'password', 'confirm_password']
 
     def validate(self, data):
@@ -48,7 +57,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('confirm_password', None)
-        user = User.objects.create_user(**validated_data)
+        user = CustomUser.objects.create_user(**validated_data)
         return user
 
 
@@ -62,5 +71,14 @@ class LoginSerializer(serializers.Serializer):
 
         if not username or not password:
             raise serializers.ValidationError('Both username and password are required.')
+
+        # Authenticate the user
+        user = authenticate(username=username, password=password)
+
+        if not user:
+            raise serializers.ValidationError('Invalid username or password.')
+
+        # Add the authenticated user to the data dictionary
+        data['user'] = user
 
         return data

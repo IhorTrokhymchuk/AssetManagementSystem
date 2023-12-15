@@ -1,9 +1,23 @@
-# assets/models.py
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 
 
+class CustomUser(AbstractUser):
+    USER_ROLES = [
+        ('admin', 'Admin'),
+        ('user', 'User'),
+    ]
+
+    role = models.CharField(max_length=10, choices=USER_ROLES, default='user')
+    groups = models.ManyToManyField(Group, verbose_name='groups', blank=True, related_name='custom_user_set', related_query_name='custom_user')
+    user_permissions = models.ManyToManyField(Permission, verbose_name='user permissions', blank=True, related_name='custom_user_set', related_query_name='custom_user')
+
+    class Meta:
+        pass
+
+
 class Asset(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, blank=True, null=True, default='asset')
     description = models.TextField()
     acquisition_date = models.DateField()
     location = models.CharField(max_length=255)
