@@ -12,6 +12,11 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="corporate_assets_project.urls.views" />
+          <option value="type.with_ui" />
+          <option value="assets.models.Asset.objects" />
+          <option value="rest_framework.authtoken.models.Token.objects" />
+          <option value="assets.models.MaintenanceRecord.objects" />
+          <option value="assets.views.openapi" />
         </list>
       </option>
     </inspection_tool>
